@@ -1,29 +1,6 @@
 define(['pipAPI','https://cdn.jsdelivr.net/gh/baranan/minno-tasks@0.*/IAT/iat8.js'], function(APIConstructor, iatExtension){
 	var API = new APIConstructor();
 
-	// Create a global variable to store raw data
-	API.addGlobal({
-		rawData: []
-	});
-
-	// Add a global end function to ensure it runs at the end of the task
-    API.addSettings('hooks', {
-        endTask: function() {
-            console.log('Task ended, starting score calculation...');
-            // Get the global variable
-            var rawData = API.getGlobal().rawData;
-
-            // Calculate the D-score here using rawData
-            var D_score = calculateDScore(rawData);
-            console.log('D-score calculated:', D_score);
-
-            // Use a timeout to ensure the display happens after the final screen
-            setTimeout(function() {
-                displayScore(D_score);
-            }, 500); // Adjust this timeout as needed
-        }
-    });
-
     return iatExtension({
       attribute1 : {
 			name : 'Male', //Will appear in the data.
@@ -128,57 +105,3 @@ define(['pipAPI','https://cdn.jsdelivr.net/gh/baranan/minno-tasks@0.*/IAT/iat8.j
         ]
     });
 });
-
-function calculateDScore(rawData) {
-    console.log('Calculating D-score with rawData:', rawData);
-    // Filter rawData for the blocks you need to calculate the D-score
-    var block1Data = rawData.filter(trial => trial.block === 'B1');
-    var block2Data = rawData.filter(trial => trial.block === 'B2');
-
-    // Extract response times
-    var block1RTs = block1Data.map(trial => trial.responseTime);
-    var block2RTs = block2Data.map(trial => trial.responseTime);
-
-    // Calculate means and standard deviations
-    var mean1 = average(block1RTs);
-    var mean2 = average(block2RTs);
-    var std1 = standardDeviation(block1RTs);
-    var std2 = standardDeviation(block2RTs);
-
-    // Calculate pooled standard deviation
-    var stdPooled = Math.sqrt((std1 ** 2 + std2 ** 2) / 2);
-
-    // Calculate D-score
-    var D_score = (mean1 - mean2) / stdPooled;
-    return D_score;
-}
-
-function average(data) {
-    return data.reduce((sum, value) => sum + value, 0) / data.length;
-}
-
-function standardDeviation(data) {
-    var avg = average(data);
-    var squareDiffs = data.map(value => (value - avg) ** 2);
-    var avgSquareDiff = average(squareDiffs);
-    return Math.sqrt(avgSquareDiff);
-}
-
-function displayScore(D_score) {
-    console.log('Displaying D-score:', D_score);
-    // Create an HTML element to display the D-score
-    var scoreDisplay = document.createElement('div');
-    scoreDisplay.innerText = 'IAT D-score: ' + D_score.toFixed(2);
-    scoreDisplay.style.position = 'fixed';
-    scoreDisplay.style.top = '50%';
-    scoreDisplay.style.left = '50%';
-    scoreDisplay.style.transform = 'translate(-50%, -50%)';
-    scoreDisplay.style.fontSize = '5em';
-    scoreDisplay.style.color = '#000';
-    scoreDisplay.style.textAlign = 'center';
-    scoreDisplay.style.zIndex = '9999';
-    scoreDisplay.style.backgroundColor = 'white'; // To ensure readability
-
-    // Append the element to the body
-    document.body.appendChild(scoreDisplay);
-}
