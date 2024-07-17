@@ -75,20 +75,4 @@ function displayScore(score) {
 
   // Append the element to the body
   document.body.appendChild(scoreDisplay);
-
-  // Can be removed if not needed
-  var feedback = document.createElement("div");
-  feedback.innerText = score.feedback;
-  feedback.style.position = "fixed";
-  feedback.style.top = "calc(50% + 3em)"; // Adjust the top position to be below the score display
-  feedback.style.left = "50%";
-  feedback.style.transform = "translate(-50%, -50%)";
-  feedback.style.fontSize = "2em";
-  feedback.style.color = "#000";
-  feedback.style.textAlign = "center";
-  feedback.style.zIndex = "9999";
-  feedback.style.backgroundColor = "white"; // To ensure readability
-
-  // Append the additional text element to the body
-  document.body.appendChild(feedback);
 }
