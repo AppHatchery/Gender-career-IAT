@@ -1,11 +1,6 @@
 define(['pipAPI','https://cdn.jsdelivr.net/gh/baranan/minno-tasks@0.*/IAT/iat8.js'], function(APIConstructor, iatExtension){
 	var API = new APIConstructor();
 
-	// Create a global variable to store raw data
-	API.addGlobal({
-		rawData: []
-	});
-
     return iatExtension({
       attribute1 : {
 			name : 'Male', //Will appear in the data.
@@ -92,63 +87,21 @@ define(['pipAPI','https://cdn.jsdelivr.net/gh/baranan/minno-tasks@0.*/IAT/iat8.j
 		fb_slight_Att1WithCatA_Att2WithCatB : 'Your responses suggested a slight automatic association for attribute1 with categoryA and attribute2 with categoryB.',
 		fb_equal_CatAvsCatB : 'Your responses suggested little or no automatic association between attribute2 and attribute1 with categoryA and categoryB.',
 
-			// Add this to the bottom of the iatExtension configuration
-		onEnd: function(){
-			// Get the global variable
-			var rawData = API.getGlobal().rawData;
-
-			// Calculate the D-score here using rawData
-			var D_score = calculateDScore(rawData);
-			console.log('IAT D-score: ' + D_score);
-		},
-		trials: [
-			{
-				inherit: 'sort',
-				data: {
-					block: 'B1', // Replace 'B1' with appropriate block name
-				},
-				// Add raw data collection
-				onEnd: function(trialData){
-					// Store trial data into global rawData
-					API.addGlobal({rawData: API.getGlobal().rawData.concat(trialData)});
-				}
-			}
-		]
-	});
+		// Add this to the bottom of the iatExtension configuration
+		// Add a global end function to ensure it runs at the end of the task
+        trials: [
+            {
+                inherit: 'sort',
+                data: {
+                    block: 'B1', // Replace 'B1' with appropriate block name
+                },
+                // Add raw data collection
+                onEnd: function(trialData) {
+                    // Store trial data into global rawData
+                    API.addGlobal({ rawData: API.getGlobal().rawData.concat(trialData) });
+                    console.log('Trial data stored:', trialData);
+                }
+            }
+        ]
+    });
 });
-
-function calculateDScore(rawData) {
-	// Filter rawData for the blocks you need to calculate the D-score
-	var block1Data = rawData.filter(trial => trial.block === 'B1');
-	var block2Data = rawData.filter(trial => trial.block === 'B2');
-
-	// Extract response times
-	var block1RTs = block1Data.map(trial => trial.responseTime);
-	var block2RTs = block2Data.map(trial => trial.responseTime);
-
-	// Calculate means and standard deviations
-	var mean1 = average(block1RTs);
-	var mean2 = average(block2RTs);
-	var std1 = standardDeviation(block1RTs);
-	var std2 = standardDeviation(block2RTs);
-
-	// Calculate pooled standard deviation
-	var stdPooled = Math.sqrt((std1**2 + std2**2) / 2);
-
-	// Calculate D-score
-	var D_score = (mean1 - mean2) / stdPooled;
-	return D_score;
-}
-
-function average(data) {
-	return data.reduce((sum, value) => sum + value, 0) / data.length;
-}
-
-function standardDeviation(data) {
-	var avg = average(data);
-	var squareDiffs = data.map(value => (value - avg) ** 2);
-	var avgSquareDiff = average(squareDiffs);
-	return Math.sqrt(avgSquareDiff);
-}
-
-
